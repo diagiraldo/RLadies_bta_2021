@@ -40,7 +40,7 @@
 \end{frame}
 
 
-\section{Holi!}
+\section{Intro}
 
 \definecolor{bdback}{RGB}{235,235,225}
 {
@@ -92,8 +92,10 @@ la causa más común de \textbf{demencia}.
 \end{overlayarea}
 \end{frame}
 
+{%
+\setbeamertemplate{frame footer}{$^*$ \textit{aka,} cacharrear con datos.}
 \begin{frame}[fragile]{¿qué vamos a hacer hoy?}
- Usar puntajes por dominio para \textbf{encontrar sub-grupos} de pacientes con Deterioro Cognitivo Leve.\\
+ Explorar la posibilidad$^*$ de encontrar distintos \textbf{sub-grupos} de pacientes con Deterioro Cognitivo Leve usando puntajes por dominio cognitivo.\\
  \vspace{0.2cm}
  Los datos de prueba, código y esta presentación están en\\ \hltext{PinkPeacock}{\url{https://github.com/diagiraldo/RLadies_bta_2021/}}\\
  \vspace{0.4cm}
@@ -109,11 +111,12 @@ la causa más común de \textbf{demencia}.
   \includegraphics[width=\textwidth]{imgs/head_datos.png}
  \end{figure}
 \end{frame}
+}
 
 \begin{frame}[fragile]{Variables}
  \begin{columns}[T]
   \column{0.3\textwidth}
-  \textcolor{PinkPeacock}{\textbf{Puntajes por dominio:}}
+  \textcolor{PinkPeacock}{\textbf{Puntajes ESTANDARIZADOS por dominio:}}
   \begin{itemize}
    \item MEMORY
    \item LANGUAGE
@@ -169,8 +172,8 @@ library(NbClust)
  \textcolor{UltraViolet}{\textbf{Filtrar datos:}}\\
  \vspace{-0.2cm}
  \begin{verbatim}
-  B <- A %>%
-    filter(dx == "MCI") %>%
+Amci <- filter(A, dx == "MCI")
+B <- Amci %>%
     select(MEMORY, LANGUAGE, EXECUTIVE, 
            VISUOSPATIAL, ORIENTATION, ATTENTION)
  \end{verbatim}
@@ -328,27 +331,198 @@ fviz_cluster(k4res, B, geom = "point")
 \end{frame}
 }
 
+\section{¿Cómo elegir $k$?}
+
 {\setbeamercolor{background canvas}{bg=white}
+\setbeamertemplate{frame footer}{$^*$ En este caso, k-means con distancia euclideana, esta es la varianza intra-grupo}
 \begin{frame}[fragile]{}
 \vspace{0.3cm}
-\textcolor{UltraViolet}{\textbf{\large Varianza intra-grupo:}} \\
-Cuando hay más sub-grupos $(\uparrow k)$, las varianzas intra-grupo disminuyen.
-\vspace{0.3cm}
+\textcolor{UltraViolet}{\textbf{\large ¿Qué pasa cuando aumenta el número de sub-grupos?}}\vspace{0.5cm}
 \begin{columns}[]
- \column{0.45\textwidth}
- \vspace{0.2cm}
- \begin{verbatim}
->
-\end{verbatim}
- \column{0.55\textwidth}
+\column{0.5\textwidth}
  \begin{figure}
+   \includegraphics<1>[width=\textwidth]{imgs/fviz_k2res.png}
+   \includegraphics<2>[width=\textwidth]{imgs/fviz_k3res.png}
+   \includegraphics<3>[width=\textwidth]{imgs/fviz_k4res.png}
+   \includegraphics<4>[width=\textwidth]{imgs/fviz_k5res.png}
+   \includegraphics<5>[width=\textwidth]{imgs/fviz_k6res.png}
+   \includegraphics<6>[width=\textwidth]{imgs/fviz_k7res.png}
  \end{figure}
+ \column{0.5\textwidth}
+  Suma de los cuadrados de las distancias al centro del sub-grupo (\texttt{\$withinss}):\\
+  \vspace{0.3cm}
+  \begin{enumerate}[<+->]
+  \addtocounter{enumi}{1}
+   \item \texttt{\small 1081.833 1930.495}
+   \item \texttt{\small 759.5350 762.2628 868.6328}
+   \item \texttt{\small 347.6101 688.4191 390.6727 618.7741}
+   \item \texttt{\small 390.9384 309.5926 277.6631 368.1043 514.1842}
+   \item \texttt{\small 300.4036 398.3652 424.8112 189.4664 203.1081 247.0580}
+   \item \texttt{\small 213.9738 358.3246 270.7691 173.4431 218.0087 174.3776 199.9581}
+  \end{enumerate}
 \end{columns}
 \end{frame}
 }
 
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\begin{align*}
+ \mbox{Variabilidad total} &\geq \sum_{\mbox{\tiny sub-grupos}} \mbox{Variabilidad intra-grupo}\\
+ \sum_{\mbox{\tiny observaciones}} (\mbox{distancia al centro del grupo})^2 &\geq \sum_{\mbox{\tiny sub-grupos}} \sum_{\substack{\mbox{\tiny observaciones}\\\mbox{\tiny en sub-grupo}}} (\mbox{distancia al centro del sub-grupo})^2\\
+ \mbox{\texttt{\$totss}} &\geq \mbox{\texttt{\$tot.withinss}}
+\end{align*}
+\pause
+\vspace{-0.4cm}
+\begin{columns}
+ \column{0.3\textwidth}
+ \begin{center}
+  \textcolor{UltraViolet}{\textbf{\large Método del codo}}\\
+  (Elbow method)\\
+  \vspace{0.3cm}
+  \onslide<3->{meh!}
+ \end{center}
+ \column{0.7\textwidth}
+ \begin{figure}
+ \includegraphics[width=\textwidth]{imgs/wcss.png}
+\end{figure}
+\end{columns}
+\end{frame}
+}
 
-\section{¿Cómo elegir $k$?}
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+Esta gráfica también la podemos generar con la función \texttt{fviz\_nbclust}:\\
+\begin{verbatim}
+fviz_nbclust(B, kmeans, method = "wss")
+\end{verbatim}
+\pause
+\begin{figure}
+ \includegraphics[width=0.8\textwidth]{imgs/fviz_wss.png}
+\end{figure}
+\pause
+\vspace{-0.2cm}
+¿Dónde se ve un codo?
+\end{frame}
+}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+\textcolor{UltraViolet}{\textbf{\large Método de la silueta:}} basado en que tan lejos (o cerca) están las observaciones a los sub-grupos vecinos.
+\begin{verbatim}
+fviz_nbclust(B, kmeans, method = "silhouette")
+\end{verbatim}
+\pause
+\begin{figure}
+ \includegraphics[width=0.75\textwidth]{imgs/fviz_silueta.png}
+\end{figure}
+\pause
+\vspace{-0.2cm}
+Número sugerido de sub-grupos: 2
+\end{frame}
+}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+\textcolor{UltraViolet}{\textbf{\large Método del \textit{gap statistic}:}} Compara las varianzas intra-grupo observadas Vs. varianzas intra-grupo simuladas.
+\begin{verbatim}
+fviz_nbclust(B, kmeans, method = "gap_stat")
+\end{verbatim}
+\pause
+\begin{figure}
+ \includegraphics[width=0.75\textwidth]{imgs/fviz_gap.png}
+\end{figure}
+\pause
+\vspace{-0.2cm}
+Número sugerido de sub-grupos: 3
+\end{frame}
+}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+Hay \textcolor{UltraViolet}{\textbf{\large $\pm$ TREINTA}} índices/criterios diferentes:
+\begin{verbatim}
+NbClust(data = B, method = "kmeans")
+\end{verbatim}
+\pause
+\begin{figure}
+ \includegraphics[width=0.75\textwidth]{imgs/nbclust.png}
+\end{figure}
+\pause
+\vspace{-0.2cm}
+Número de sub-grupos sugerido por la mayoría: 3
+\end{frame}
+}
+
+\begin{frame}[plain]
+\vspace{1cm}
+\begin{columns}
+ \column{0.4\textwidth}
+ \begin{center}
+  \vspace{-3cm}
+  \textbf{\Huge{Ajá,\\
+  \vspace{0.5cm}
+  y entonces?}}\\
+  \vspace{1cm}
+  \onslide<2->{Usar el criterio propio para tomar una \textit{decisión informada}}
+ \end{center}
+ \column{0.1\textwidth}
+ \column{0.5\textwidth}
+ \includegraphics[width=\textwidth]{../../Documents/proposal-defense/img/me_questionmark.png}
+\end{columns}
+\end{frame}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+\textcolor{UltraViolet}{\textbf{\large Resultado con $k=3$}} 
+\begin{columns}
+ \column{0.45\textwidth}
+{\small
+ \begin{verbatim}
+res <- kmeans(B, 3)
+Amci$k3 <- as.factor(res$cluster)
+nd <- colnames(B)
+m <- melt(Amci, measure.vars = nd)
+ggplot(m, aes(k3, value)) + 
+    geom_boxplot(aes(colour = variable)) + 
+    theme(legend.position = "top")
+\end{verbatim}}
+ \column{0.55\textwidth}
+ \pause
+ \begin{figure}
+ \includegraphics[width=\textwidth]{imgs/boxplots3.png}
+\end{figure}
+\end{columns}
+\end{frame}
+}
+
+{
+\usebackgroundtemplate{\includegraphics[width=\paperwidth]{../../Documents/weekly-seminar/img/purple_wall.jpg}}
+\begin{frame}[plain]
+\begin{overlayarea}{0.9\textwidth}{9cm}
+ \begin{columns}
+ \column{0.5\textwidth}
+  \begin{tikzpicture}[remember picture,overlay]
+    \node[xshift=4.5cm,yshift=4.5cm] at (current page.south west) {\includegraphics[width=1.3\textwidth]{../../Documents/weekly-seminar/img/me_letsdiscuss.png}};
+  \end{tikzpicture}
+  \column{0.1\textwidth}
+  \column{0.35\textwidth}
+  \vspace{6cm}
+  \setbeamercolor{whitebox}{bg=white}
+\begin{beamercolorbox}[sep=2mm]{whitebox}
+ \textbf{\Huge Gracias!}\\
+ \vspace{0.2cm}
+ dia.giraldo@gmail.com
+\end{beamercolorbox}
+ \end{columns}
+\end{overlayarea}
+\end{frame}
+}
+
 
 % 
 % % otras distancias
