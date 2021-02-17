@@ -1,1 +1,17 @@
 prepro_datos/
+presentacion/imgs/
+
+*.sty
+*.aux
+*.lof
+*.log
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.snm
+*.nav
+*.vrb
+
