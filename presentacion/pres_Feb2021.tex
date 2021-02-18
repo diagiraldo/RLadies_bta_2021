@@ -95,8 +95,9 @@ la causa más común de \textbf{demencia}.
 {%
 \setbeamertemplate{frame footer}{$^*$ \textit{aka,} cacharrear con datos.}
 \begin{frame}[fragile]{¿qué vamos a hacer hoy?}
- Explorar la posibilidad$^*$ de encontrar distintos \textbf{sub-grupos} de pacientes con Deterioro Cognitivo Leve usando puntajes por dominio cognitivo.\\
+ Usar$^*$ puntajes por dominio cognitivo para explorar la existencia de distintos \textbf{sub-grupos} de pacientes con Deterioro Cognitivo Leve.\\
  \vspace{0.2cm}
+ \pause
  Los datos de prueba, código y esta presentación están en\\ \hltext{PinkPeacock}{\url{https://github.com/diagiraldo/RLadies_bta_2021/}}\\
  \vspace{0.4cm}
  \pause
@@ -125,14 +126,13 @@ la causa más común de \textbf{demencia}.
    \item ORIENTATION
    \item ATTENTION
   \end{itemize}
-  \column{0.33\textwidth}
+  \column{0.6\textwidth}
   \textcolor{BlueMoon}{\textbf{Información demográfica:}}
   \begin{itemize}
    \item edad
    \item género
    \item edu: años de educación.
   \end{itemize}
-  \column{0.33\textwidth}
   \textcolor{SparklingGrape}{\textbf{Información clínica:}}
   \begin{itemize}
    \item dx: diagnóstico
@@ -148,7 +148,7 @@ la causa más común de \textbf{demencia}.
 \end{frame}
 
 \begin{frame}[fragile]{}
- Vamos a usar los \textbf{puntajes por dominio} para encontrar sub-grupos de \textbf{pacientes con Deterioro Cognitivo Leve.}\\
+ Nos interesan los \textbf{puntajes por dominio} de \textbf{pacientes con Deterioro Cognitivo Leve.}\\
  \vspace{0.4cm}
  \pause
  En RStudio:\\
@@ -178,15 +178,13 @@ B <- Amci %>%
            VISUOSPATIAL, ORIENTATION, ATTENTION)
  \end{verbatim}
  \end{columns}
- B tiene 680 observaciones con 6 variables
+ la tabla B tiene 680 observaciones (filas) con 6 variables (columnas)
 \end{frame}
 
-\section{Métodos de agrupamiento}
-
 \begin{frame}[fragile]{Agrupamiento de datos (Clustering)}
-Conjunto de métodos \textbf{no-supervisados} para dividir un conjunto de datos en sub-grupos de tal forma que:
+Conjunto de métodos \textbf{no-supervisados} para dividir un grupo de datos en sub-grupos de tal forma que:
 \begin{itemize}
- \item Observaciones muy parecidas pertenecen a un mismo grupo.
+ \item Observaciones muy parecidas pertenecen a un mismo sub-grupo.
  \item Observaciones muy diferentes pertenecen a distintos sub-grupos.
 \end{itemize}
 \vspace{0.4cm}
@@ -196,9 +194,11 @@ Algunos de los métodos más conocidos:
   \item \textcolor<3>{PinkPeacock}{$k-$means} 
   \item $k-$medoids
   \item Hierarchical clustering
-  \item Density-Based Spatial Clustering of Applications with Noise (DBSCAN) 
+  %\item Density-Based Spatial Clustering of Applications with Noise (DBSCAN) 
  \end{itemize}
 \end{frame}
+
+\section{$k$-means}
 
 {%
 \setbeamertemplate{frame footer}{Artwork by @allison\_horst}
@@ -228,7 +228,7 @@ Algunos de los métodos más conocidos:
 \vspace{0.3cm}
 \textcolor{UltraViolet}{\textbf{\large Ejemplo $k$-means con $k=2$}}\\
 \vspace{0.3cm}
-En la librería \texttt{stats}, paquete base de R, tenemos la función \texttt{kmeans}\\
+En la librería \texttt{stats}, paquete base de R, tenemos la función \texttt{kmeans()}\\
 \begin{columns}[t]
 \column{0.25\textwidth}
 \begin{verbatim} 
@@ -500,8 +500,245 @@ ggplot(m, aes(k3, value)) +
 \end{frame}
 }
 
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+\textcolor{UltraViolet}{\textbf{\large Hasta ahora...}}\\
+\vspace{0.3cm}
+Hemos usado \textbf{$k$-means} y hemos asumido que la distancia entre observaciones es la \textbf{distancia euclideana} (por defecto).\\
+\vspace{0.4cm}
+\pause
+\textcolor{PinkPeacock}{Sobre $k$-means}:
+\begin{itemize}
+ \item Como la media, es sensible a \textit{outliers}
+ \item Los centros de cada sub-grupo no estan necesariamente en el conjunto de observaciones.
+ \item Es necesario conocer el espacio donde están las observaciones. 
+\end{itemize}
+\vspace{0.4cm}
+\pause
+\textcolor{HawaianSurf}{Sobre la distancia euclideana}:
+\begin{itemize}
+ \item Se asume ortogonalidad entre dimensiones ($\longrightarrow$ independencia?)
+ \item Todaslas dimensiones tienen la misma importancia.
+ \item Cosas raras empiezan a pasar en espacios de muchas dimensiones.
+\end{itemize}
+\end{frame}
+
 \section{Distancias entre observaciones}
 
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+Las funciones \texttt{dist} y \texttt{get\_dist} permiten calcular diferentes distancias entre observaciones. 
+\begin{columns}
+\column{0.5\textwidth}
+\begin{verbatim}
+tmp_B <- B[sample(1:nrow(B), 100),]
+\end{verbatim}
+\textcolor{UltraViolet}{Euclideana $(L^2)$}:\\
+\texttt{dist(tmp\_B, method = "euclidean")}\\
+\vspace{0.1cm}
+\onslide<2->{%
+\textcolor{UltraViolet}{Manhattan $(L^1)$}:\\
+\texttt{dist(tmp\_B, method = "manhattan")}\\\vspace{0.1cm}}
+\onslide<3->{%
+\textcolor{UltraViolet}{Maximo $(L^\infty)$}:\\
+\texttt{dist(tmp\_B, method = "maximum")}\\\vspace{0.1cm}}
+\onslide<4->{%
+\textcolor{UltraViolet}{Binaria $(L^0)$}:\\
+\texttt{dist(tmp\_B, method = "binary")}\\\vspace{0.1cm}}
+\column{0.45\textwidth}
+\texttt{fviz\_dist(d, show\_labels = FALSE)}
+\begin{figure}
+ \includegraphics<1>[width=\textwidth]{imgs/ex_euclid.png}
+ \includegraphics<2>[width=\textwidth]{imgs/ex_manhattan.png}
+ \includegraphics<3>[width=\textwidth]{imgs/ex_maxi.png}
+ \includegraphics<4>[width=\textwidth]{imgs/ex_binary.png}
+\end{figure}
+\end{columns}
+\end{frame}
+}
+
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+\textcolor{HawaianSurf}{\textbf{\large De regreso a nuestros datos...}}\\
+\vspace{0.3cm}
+Tenemos los puntajes en 6 dominios cognitivos: memoria, lenguaje, función ejecutiva, habilidades visuoespaciales, orientación y atención.\\
+\vspace{0.2cm}
+\pause
+Estas variables \textbf{NO} son independientes!\\
+\vspace{0.4cm}
+\pause
+\textcolor{UltraViolet}{Distancia de Mahalanobis}: tiene en cuenta las correlaciones entre variables, reduce la redundancia.
+\[d_M(i,j)^2 = (x_i - x_j)^TC^{-1}(x_i - x_j)\]
+$C$: matriz de covarianza.\\
+\vspace{0.8cm}
+\pause
+\setbeamercolor{greybox}{bg=LightGrey}
+\begin{beamercolorbox}[sep=2mm]{greybox}
+En R, la función \texttt{mahalanobis()} calcula la distancia de uno o varios puntos al centro de una distribución, no calcula la distancia entre pares de puntos.
+\end{beamercolorbox}
+\end{frame}
+
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+\textcolor{UltraViolet}{\textbf{\large Distancia de Mahalanobis hecha a mano}}\\
+\vspace{0.3cm}
+\begin{verbatim}
+my_mah_dist <- function(M, invcov){
+    n <- nrow(M)
+    d_mah <-  matrix(data = NA, nrow = n, ncol = n)
+    for (i in 1:n){
+        for (j in 1:i){
+            x <- as.matrix(M[i,] - M[j,])
+            d_mah[i,j] <- x %*% invcov %*% t(x)
+        }
+    }
+    d <- as.dist(sqrt(d_mah))
+    return(d)
+}
+
+d <- my_mah_dist(tmp_B, solve(cov(B)))
+\end{verbatim}
+\end{frame}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+~\\
+\vspace{0.4cm}
+\begin{columns}
+\column{0.5\textwidth}
+ \textcolor{UltraViolet}{Distancia de Mahalanobis}
+ \begin{figure}
+ \includegraphics[width=\textwidth]{imgs/ex_mah.png}
+ \end{figure}
+\column{0.5\textwidth}
+ \textcolor{UltraViolet}{Distancia euclideana}
+ \begin{figure}
+ \includegraphics[width=\textwidth]{imgs/ex_euclid.png}
+ \end{figure}
+\end{columns}
+\pause 
+El agrupamiento de datos depende completamente de la distancia!
+\end{frame}
+}
+
+\section{$k$-medoids}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+Necesitamos un método de agrupamiento que acepte nuestra propia distancia: \alert{$k$-medoids}\\
+\vspace{0.3cm}
+\pause
+La función \texttt{pam()} de la librería \texttt{cluster} es una implementación de $k$-medoids o \textit{Partition Around Medoids (PAM)}\pause
+\begin{columns}
+ \column{0.65\textwidth}
+ \begin{verbatim}
+> d <- my_mah_dist(B, solve(cov(B)))
+> k <- 3
+> pamres <- pam(d, k, diss = TRUE, pamonce = 5)
+> table(pamres$clustering, res$cluster)
+   
+      1   2   3
+  1 160   6  48
+  2 203  26  27
+  3  24 144  42
+\end{verbatim}
+\column{0.25\textwidth}
+\texttt{res\$cluster}: partición con $k$-means y distancia euclideana.
+\end{columns}
+\end{frame}
+}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+Revisemos los criterios para elegir $k$\\
+\vspace{0.3cm}
+\textcolor{UltraViolet}{Método del codo:}
+\begin{verbatim}
+fviz_nbclust(B, FUNcluster = pam, method = "wss", diss = d) 
+\end{verbatim}
+\pause
+\begin{figure}
+ \includegraphics[width=0.8\textwidth]{imgs/pammah_fviz_wss.png}
+\end{figure}
+\end{frame}
+}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+Revisemos los criterios para elegir $k$\\
+\vspace{0.3cm}
+\textcolor{UltraViolet}{Método de la silueta:}
+\begin{verbatim}
+fviz_nbclust(B, FUNcluster = pam, method = "silhouette", diss = d)
+\end{verbatim}
+\begin{figure}
+ \includegraphics[width=0.8\textwidth]{imgs/pammah_fviz_sil.png}
+\end{figure}
+\end{frame}
+}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+Revisemos los criterios para elegir $k$\\
+\vspace{0.3cm}
+\textcolor{UltraViolet}{Método del \textit{gap statistic}:}
+\begin{verbatim}
+fviz_nbclust(B, FUNcluster = pam, method = "gap", diss = d)
+\end{verbatim}
+\begin{figure}
+ \includegraphics[width=0.8\textwidth]{imgs/pammah_fviz_silgap.png}
+\end{figure}
+\end{frame}
+}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+Y la votación de los otros treinta índices:
+\begin{verbatim}
+NbClust(data = B, diss = d, distance = NULL, method = "ward.D2")
+\end{verbatim}
+\begin{figure}
+ \includegraphics[width=0.75\textwidth]{imgs/mah_nbclust.png}
+\end{figure}
+\pause
+\vspace{-0.2cm}
+\end{frame}
+}
+
+{\setbeamercolor{background canvas}{bg=white}
+\begin{frame}[fragile]{}
+\vspace{0.3cm}
+\textcolor{UltraViolet}{\textbf{\large Comparación de resultados}}\\
+\vspace{0.3cm}
+\begin{columns}
+ \column{0.45\textwidth}
+ \begin{center}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{imgs/boxplots3.png}
+ \end{figure}
+ 1: 387, 2: 176, 3: 117\\ 
+ $k-$means, distancia euclideana
+ \end{center}
+ \column{0.45\textwidth}
+ \begin{center}
+  \begin{figure}
+  \includegraphics[width=\textwidth]{imgs/boxplots_pam3.png}
+ \end{figure}
+ 1: 214, 2: 256, 3: 210\\ 
+ PAM, distancia de Mahalanobis
+ \end{center}
+\end{columns}
+
+\end{frame}
+}
+
+%%% BYE
 
 {
 \usebackgroundtemplate{\includegraphics[width=\paperwidth]{../../Documents/weekly-seminar/img/purple_wall.jpg}}
@@ -515,7 +752,7 @@ ggplot(m, aes(k3, value)) +
   \column{0.1\textwidth}
   \column{0.35\textwidth}
   \vspace{6cm}
-  \setbeamercolor{whitebox}{bg=white}
+\setbeamercolor{whitebox}{bg=white}
 \begin{beamercolorbox}[sep=2mm]{whitebox}
  \textbf{\Huge Gracias!}\\
  \vspace{0.2cm}
