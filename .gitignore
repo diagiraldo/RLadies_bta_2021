@@ -1,5 +1,6 @@
 prepro_datos/
 presentacion/imgs/
+presentacion/platilla*
 
 *.sty
 *.aux
@@ -14,5 +15,6 @@ presentacion/imgs/
 *.snm
 *.nav
 *.vrb
+*.tex.backup
 
 .Rhistory
