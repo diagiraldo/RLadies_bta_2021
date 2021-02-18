@@ -186,3 +186,5 @@ pl <- fviz_cluster(res, data = B, geom = "point", pointsize = 0.75)
 pl
 ggsave("presentacion/imgs/fviz_kmeans3.png", pl, width = 14, height = 12, units = "cm", dpi = 300, bg = "transparent")
 
+table(res$cluster)
+table(pamres$clustering)
